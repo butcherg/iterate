@@ -1,1 +1,1 @@
-gcc -o iterate main.c pgetopt.c
+gcc -o iterate main.c
