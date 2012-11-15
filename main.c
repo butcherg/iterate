@@ -2,15 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "ggetopt.h"
+
 #ifndef MSVC
+#include "Objects/MingW/iterate_private.h"
 #define COMPILER "MinGW"
-#include "pgetopt.h"
 #else
 #define COMPILER "MS Visual C++"
-extern "C"
-{
-#include "pgetopt.h"
-}
+#include "Objects/Visual C++/iterate_private.h"
 #endif
 
 #define STRINGLEN 1024
@@ -34,12 +33,12 @@ int main(int argc, char *argv[])
     char cmd[STRINGLEN], filename[STRINGLEN], fileline[STRINGLEN];
     FILE * listfile;
     strcpy(filename,"");
+    list = NULL;
 
     while ((c = pgetopt (argc, argv, (char *) "f:l:v")) != -1)
         switch (c)
             {
                 case 'f':
-                    //printf("file: %s\n", poptarg);
                     if (strlen(poptarg) > STRINGLEN) {
                         fprintf(stderr, "iterate: Filename too long.\n");
                         exit(1);
@@ -47,22 +46,22 @@ int main(int argc, char *argv[])
                     else {
                         strncpy(filename,poptarg,STRINGLEN);
                     }
-                    //printf("filename: %s\n", filename);
                     break;
                 case 'l':
                     list = (char*) malloc (strlen(poptarg)+1);
                     if (list==NULL) exit (1);
                     strncpy(list,poptarg,strlen(poptarg));
-                    //printf("list: %s\n", list);
                     break;
                 case 'v':
-                    //fprintf(stderr, "iterate %d.%d build %d (%s)\n%s\n", VER_MAJOR, VER_MINOR, VER_BUILD, COMPILER, LEGAL_COPYRIGHT);
+                    fprintf(stderr, "iterate %d.%d build %d (%s)\n%s\n", VER_MAJOR, VER_MINOR, VER_BUILD, COMPILER, LEGAL_COPYRIGHT);
                     return(0);
                     break;
                 default:
                     fprintf(stderr, "Usage: iterate [-f listfile-one-per-line] [-l comma-separated-list] [-v] \"command\"\n");
                     return(1);
             }
+            
+    if (!list & strcmp(filename,"") == 0) strcpy(filename,"iterate.txt");
     
     
     if (!system(NULL)) {
@@ -79,11 +78,9 @@ int main(int argc, char *argv[])
     if (insertpoint !=  NULL) {
         after = insertpoint+1;
         insertpoint[0] = '\0';
-        //printf("before:%s   after:%s\n", before, after);
     }
     else {
         after = NULL;
-        //printf("before:%s\n", before);
     }
     
     
@@ -97,7 +94,6 @@ int main(int argc, char *argv[])
         item = fgets(fileline, STRINGLEN, listfile);
         while(!feof(listfile)) {
             item = chomp(fileline);
-            //printf("fileline: %s\n", item);
             strcpy(cmd,before);
             if (after) {
                 strcat(cmd,item);
